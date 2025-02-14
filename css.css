@@ -1,0 +1,4021 @@
+        /* 自定义对话框样式，确保 z-index */
+        #confirm-delete-dialog.mdui-dialog {
+            z-index: 9999 !important; /* 确保对话框在最顶层 */
+        }
+        /* 样式保持不变 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+            font-size: var(--base-font-size);
+        }
+        #app {
+            background-color: var(--app-background-color);
+            width: 95%; /* 增加宽度 */
+            max-width: 1200px; /* 增加最大宽度 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0 auto; /* 确保居中 */
+        }
+        .top-bar {
+            background-color: var(--header-color, #007bff);
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            min-height: 56px; /* 确保最小高度 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* 修改左侧按钮组样式 */
+        .top-bar .button-group {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0; /* 防止按钮被压缩 */
+            gap: 4px; /* 按钮之间的间距 */
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* 修改右侧按钮组样式 */
+        .top-bar .right-buttons {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 4px;
+        }
+        /* 中间标题样式 */
+        .top-bar .title {
+            flex: 1;
+            text-align: center;
+            white-space: nowrap; /* 防止文字换行 */
+            overflow: hidden;
+            text-overflow: ellipsis; /* 文字过长时显示省略号 */
+            margin: 0 10px; /* 确保两边有间距 */
+        }
+        /* 按钮样式优化 */
+        .top-bar .mdui-btn-icon {
+            margin: 0 !important; /* 覆盖原有的 margin */
+            width: 40px !important; /* 稍微减小按钮大小 */
+            height: 40px !important;
+            min-width: 40px !important;
+        }
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            #app {
+                width: 100%; /* 在移动端占满宽度 */
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .top-bar {
+                padding: 8px; /* 稍微减小内边距 */
+            }
+            
+            .top-bar .title {
+                font-size: 0.9em; /* 缩小字体 */
+                margin: 0 5px; /* 减小边距 */
+            }
+            
+            .top-bar .mdui-btn-icon {
+                width: 36px !important; /* 进一步减小按钮大小 */
+                height: 36px !important;
+                min-width: 36px !important;
+            }
+        }
+        .responses {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding: 70px 5% 80px 5%;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .model-response {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 确保内容居中 */
+        }
+
+        .bubble {
+            position: relative;
+            padding: 12px 15px;
+            border-radius: 15px;
+            max-width: 85%;
+            word-wrap: break-word;
+            overflow: hidden;
+            max-height: 8em; /* 默认高度限制 */
+            overflow-y: auto;
+            animation: bubbleAppear 0.3s ease-out forwards;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            width: fit-content;
+            min-width: 50px;
+            font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 添加内容提要气泡的特殊样式 */
+        .ai-bubble.summary-bubble {
+            background-color: rgba(255, 223, 0, 0.1) !important;
+            border: 1px solid rgba(255, 223, 0, 0.3) !important;
+        }
+        
+        /* 暗色模式下的内容提要气泡样式 */
+        .dark-mode .ai-bubble.summary-bubble {
+            background-color: rgba(255, 223, 0, 0.15) !important;
+            border: 1px solid rgba(255, 223, 0, 0.4) !important;
+        }
+
+        /* 添加展开状态的样式 */
+        .bubble.expanded {
+            max-height: none !important; /* 移除高度限制 */
+            overflow-y: visible !important; /* 改变溢出行为 */
+        }
+
+        .user-bubble {
+            background-color: var(--user-bubble-bg);
+            align-self: flex-end;
+            margin-left: auto; /* 用户消息靠右 */
+            margin-right: 20px; /* 右边距 */
+        }
+
+        .ai-bubble {
+            background-color: var(--ai-bubble-bg);
+            align-self: flex-start;
+            margin-right: auto; /* AI消息靠左 */
+            margin-left: 20px; /* 左边距 */
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .bubble {
+                max-width: 90%;
+            }
+
+            .user-bubble {
+                margin-right: 10px; /* 移动端减小边距 */
+            }
+
+            .ai-bubble {
+                margin-left: 10px; /* 移动端减小边距 */
+            }
+        }
+        .model-name {
+            font-size: 0.8em;
+            color: var(--model-name-color);
+            margin-bottom: 5px;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+        }
+        /* 底部输入栏样式优化 */
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            padding: 12px max(5%, 16px);
+            background-color: var(--glass-background-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+            box-sizing: border-box; /* 确保padding不会导致溢出 */
+        }
+        /* 移动端适配优化 */
+        @media (max-width: 768px) {
+            .input-container {
+                padding: 8px max(16px, 4%); /* 增加最小边距 */
+                gap: 8px;
+            }
+            
+            /* 调整发送按钮样式 */
+            .input-container .mdui-btn-raised {
+                min-width: 40px;
+                height: 36px;
+                padding: 0 12px;
+                margin-right: 0; /* 移除右边距 */
+            }
+            
+            /* 调整输入框的边距和大小 */
+            .input-container textarea {
+                margin: 0 8px;
+                padding: 8px;
+                min-height: 36px;
+            }
+            
+            /* 调整两侧按钮大小 */
+            .input-container .icon-button,
+            .input-container .mdui-btn-icon {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+                padding: 6px !important;
+            }
+        }
+        /* 确保毛玻璃效果在所有设备上正常显示 */
+        @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+            .input-container {
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+            }
+        }
+        /* 深色模式适配 */
+        .dark-mode .input-container {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+        .input-container button {
+            padding: 10px;
+            background-color: rgba(0, 123, 255, 0.6);
+            border: none;
+            color: var(--glass-text-color);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px); /* 按钮毛玻璃效果 */
+            font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+        .input-container button:hover {
+            background-color: rgba(63,81,181,1);
+        }
+        .input-container textarea {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            max-width: none; /* 移除textarea的最大宽度限制 */
+            margin: 0 8px; /* 添加适当的边距 */
+            color: var(--glass-text-color);
+            background-color: var(--glass-background-color);
+            resize: none; /* 禁用 textarea 的缩放 */
+            max-height: 200px; /* 最大高度为 200px（约 4 行） */
+            overflow-y: auto; /* 启用垂直滚动条 */
+            backdrop-filter: blur(15px); /* 毛玻璃效果 */
+            font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+        .input-container .icon-button {
+            padding: 0 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--glass-text-color);
+            backdrop-filter: blur(15px); /* 按钮毛玻璃效果 */
+            font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+        .history-modal {
+            padding: 20px;
+        }
+        .history-session {
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* 改为顶部对齐 */
+        }
+        .history-info {
+            flex: 1;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .history-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .model-selection-modal {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 10px;
+        }
+        .model-selection-modal .model-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .model-selection-modal .model-item .mdui-checkbox {
+            margin-right: 10px;
+        }
+        .dark-mode {
+            --background-color: #121212;
+            --text-color: #ffffff;
+            --app-background-color: #1e1e1e;
+            --input-background-color: #2e2e2e;
+            --border-color: #333;
+            --user-bubble-bg: #2e3b4e;
+            --ai-bubble-bg: #3a3a3a;
+            --model-name-color: #bbb;
+            --glass-background-color: hsla(0, 0%, 20%, 0.75);
+            --glass-text-color: #ffffff;
+        }
+        .light-mode {
+            --background-color: #f0f0f0;
+            --text-color: #000000;
+            --app-background-color: #ffffff;
+            --input-background-color: #ffffff;
+            --border-color: #ddd;
+            --user-bubble-bg: #cce5ff;
+            --ai-bubble-bg: #e2e3e5;
+            --model-name-color: #888;
+            --glass-background-color: hsla(0, 0%, 100%, 0.75);
+            --glass-text-color: #000000;
+        }
+        /* 确保对话框初始状态为隐藏 */
+        #model-selection-dialog,
+        #history-dialog {
+            display: none;
+        }
+        @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+            .input-container {
+                background: var(--glass-background-color);
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+            }
+            .input-container button {
+                background: rgba(0, 123, 255, 0.6);
+                -webkit-backdrop-filter: blur(15px);
+                backdrop-filter: blur(15px);
+            }
+            .input-container textarea {
+                background: var(--glass-background-color);
+                -webkit-backdrop-filter: blur(15px);
+                backdrop-filter: blur(15px);
+            }
+            .input-container .icon-button {
+                -webkit-backdrop-filter: blur(15px);
+                backdrop-filter: blur(15px);
+            }
+			.mdui-textfield-input {
+			            width: 100%;
+			            padding: 10px;
+			            margin-bottom: 10px;
+			            border: 1px solid var(--border-color);
+			            border-radius: 5px;
+			            outline: none;
+			            color: var(--text-color);
+			            background-color: var(--input-background-color);
+			            font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+			        }
+        }
+        /* 在现有的样式中添加 */
+        .user-bubble img {
+            max-width: 200px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 10px;
+            border-radius: 5px;
+        }
+        
+        .input-container .icon-button {
+            margin-right: 5px;
+        }
+        /* 在现有样式中添加 */
+        :root {
+            --base-font-size: 16px;
+        }
+        
+        body {
+            font-size: var(--base-font-size);
+        }
+        
+        .mdui-dialog-content .mdui-textfield {
+            margin-bottom: 16px;
+        }
+        
+        .mdui-select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-background-color);
+            color: var(--text-color);
+        }
+        
+        /* 对话框暗色模式适配 */
+        .dark-mode .mdui-dialog {
+            background-color: var(--app-background-color);
+            color: var(--text-color);
+        }
+        
+        .dark-mode .mdui-dialog-title {
+            color: var(--text-color);
+        }
+        
+        .dark-mode .mdui-dialog-content {
+            color: var(--text-color);
+        }
+        
+        .dark-mode .history-session {
+            border-color: var(--border-color);
+        }
+        
+        .dark-mode .model-selection-modal .model-item {
+            color: var(--text-color);
+        }
+        
+        .dark-mode .mdui-checkbox-icon {
+            border-color: #ffffff;
+            background-color: transparent;
+        }
+        
+        .dark-mode .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            border-color: #1976d2;
+            background-color: #1976d2;
+        }
+        
+        .dark-mode .mdui-dialog .mdui-btn {
+            color: var(--text-color);
+        }
+        
+        .dark-mode .mdui-select {
+            background-color: var(--input-background-color);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+        
+        /* 亮色模式样式 */
+        .light-mode .mdui-dialog {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        
+        .light-mode .mdui-dialog-title {
+            color: #000000;
+        }
+        
+        .light-mode .mdui-dialog-content {
+            color: #000000;
+        }
+        
+        /* 对话框动画和阴影效果 */
+        .mdui-dialog {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        /* 搜索输入框样式适配 */
+        .dark-mode .mdui-textfield-input {
+            color: var(--text-color);
+            background-color: var(--input-background-color);
+            border-color: var(--border-color);
+        }
+        
+        .light-mode .mdui-textfield-input {
+            color: #000000;
+            background-color: #ffffff;
+            border-color: #ddd;
+        }
+        
+        /* 对话框内容区域滚动条样式 */
+        .mdui-dialog-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .dark-mode .mdui-dialog-content::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .light-mode .mdui-dialog-content::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        /* 对话框按钮悬停效果 */
+        .mdui-dialog .mdui-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* 在现有样式中添加 */
+        @keyframes bubbleAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes userBubbleAppear {
+            0% {
+                opacity: 0;
+                transform: translateX(20px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes aiBubbleAppear {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* 悬停效果 */
+        .bubble:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 确保动画在暗色模式下也有好的效果 */
+        .dark-mode .bubble {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode .bubble:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 优化移动端动画效果 */
+        @media (max-width: 768px) {
+            .bubble {
+                animation-duration: 0.2s; /* 移动端稍微加快动画速度 */
+            }
+        }
+
+        /* 添加对不支持动画的浏览器的回退支持 */
+        @media (prefers-reduced-motion: reduce) {
+            .bubble {
+                animation: none;
+            }
+            .bubble:hover {
+                transform: none;
+            }
+        }
+
+        /* 在现有样式中添加 */
+        .history-session .history-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* 修改欢迎背景样式 */
+        .welcome-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            text-align: center;
+            opacity: 0.8;
+            padding: 20px;
+            z-index: 1; /* 确保显示在其他内容之上 */
+        }
+
+        .welcome-text {
+            font-size: clamp(2rem, 5vw, 3rem); /* 稍微增大字体 */
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            font-weight: 300;
+            animation: fadeIn 1s ease-out;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加轻微阴影 */
+        }
+
+        .welcome-subtext {
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            color: var(--model-name-color);
+            max-width: 800px;
+            line-height: 1.6;
+            animation: fadeIn 1s ease-out 0.5s backwards;
+            opacity: 0.8;
+        }
+
+        /* 优化动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .welcome-container {
+                padding: 20px;
+            }
+            
+            .welcome-text {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* 确保responses容器在没有消息时也能正确显示欢迎信息 */
+        .responses {
+            position: relative;
+            min-height: calc(100vh - 130px); /* 减去顶部栏和输入框的高度 */
+        }
+        
+        /* 深色模式下的复选框和标签样式优化 */
+        .dark-mode .mdui-checkbox-icon {
+            border-color: #ffffff;
+            background-color: transparent;
+        }
+        
+        .dark-mode .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            border-color: #1976d2;
+            background-color: #1976d2;
+        }
+        
+        /* 深色模式下的文本标签样式 */
+        .dark-mode .mdui-textfield-label {
+            color: var(--text-color);
+        }
+        
+        /* 深色模式下的选择框样式 */
+        .dark-mode .mdui-select {
+            background-color: var(--input-background-color);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+        
+        /* 深色模式下的选项样式 */
+        .dark-mode .mdui-select-menu {
+            background-color: var(--app-background-color);
+            color: var(--text-color);
+        }
+        
+        .dark-mode .mdui-select-menu-item {
+            color: var(--text-color);
+        }
+        
+        /* 深色模式下的复选框文字颜色 */
+        .dark-mode .mdui-checkbox {
+            color: var(--text-color);
+        }
+        
+        /* 深色模式下的对话框内容区域背景色 */
+        .dark-mode .mdui-dialog .mdui-dialog-content {
+            background-color: var(--app-background-color);
+        }
+        
+        /* 深色模式下的按钮颜色 */
+        .dark-mode .mdui-dialog .mdui-btn {
+            color: #1976d2;
+        }
+        
+        /* 深色模式下的输入框样式 */
+        .dark-mode .mdui-textfield-input {
+            color: var(--text-color);
+            border-bottom-color: var(--border-color);
+        }
+        
+        /* 深色模式下的模型选择项悬停效果 */
+        .dark-mode .model-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 设置帮助文本的样式 */
+        .setting-helper-text {
+            font-size: 0.85em;
+            margin-top: 4px;
+            margin-left: 34px; /* 与复选框文本对齐 */
+            opacity: 0.7;
+        }
+
+        /* 深色模式下的帮助文本样式 */
+        .dark-mode .setting-helper-text {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 浅色模式下的帮助文本样式 */
+        .light-mode .setting-helper-text {
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* 历史记录对话框样式优化 */
+        #history-dialog {
+            border-radius: 8px;
+            max-width: 95vw;
+        }
+
+        #history-dialog .mdui-dialog-title {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .history-actions {
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .history-actions .mdui-btn {
+            min-width: 90px;
+            border-radius: 4px;
+            padding: 0 12px;
+            height: 36px;
+            font-size: 14px;
+        }
+
+        .chat-history-list {
+            padding: 8px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .chat-history-item {
+            border-radius: 8px;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .chat-history-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            #history-dialog {
+                margin: 8px;
+                width: calc(100% - 16px);
+                max-height: 90vh;
+            }
+
+            .history-actions {
+                padding: 8px 4px;
+            }
+
+            .history-actions .mdui-btn {
+                min-width: auto;
+                flex: 1;
+                padding: 0 8px;
+                white-space: nowrap;
+            }
+
+            .chat-history-list {
+                padding: 4px;
+                max-height: 60vh;
+            }
+
+            .chat-history-item {
+                padding: 8px;
+                margin: 4px 0;
+            }
+
+            #history-dialog .mdui-dialog-title {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .mdui-dialog-content {
+                padding: 8px;
+            }
+        }
+
+        /* 深色模式适配 */
+        .dark-mode #history-dialog {
+            background-color: #1e1e1e;
+        }
+
+        .dark-mode .chat-history-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-mode #history-dialog .mdui-dialog-title {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 按钮和输入框统一圆角 */
+        .mdui-textfield-input,
+        .mdui-btn,
+        .mdui-dialog,
+        .mdui-card,
+        .mdui-panel-item,
+        .mdui-select {
+            border-radius: 8px !important;
+        }
+
+        /* 确保按钮图标垂直居中 */
+        .mdui-btn .mdui-icon {
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        /* 优化列表项布局 */
+        .chat-history-list .mdui-list-item {
+            border-radius: 8px;
+            margin: 4px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 优化滚动条样式 */
+        .chat-history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-history-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .dark-mode .chat-history-list::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 在现有样式中添加 */
+        .elevator-buttons {
+            position: fixed;
+            left: 20px;
+            bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .elevator-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--glass-background-color);
+            backdrop-filter: blur(10px);
+            color: var(--glass-text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .elevator-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(63,81,181,0.6);
+        }
+
+        .elevator-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .elevator-buttons {
+                left: 10px;
+                bottom: 100px;
+            }
+            
+            .elevator-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        .history-actions .mdui-btn {
+            min-width: 100px;
+            margin: 0 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-actions .mdui-btn i {
+            margin-right: 4px;
+        }
+
+        .theme-toggle-icon {
+          position: relative;
+          width: 24px;
+          height: 24px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;  /* 保持垂直居中 */
+          justify-content: center;
+          margin-left: 8px;  /* 添加一点左边距，使图标整体向右移动 */
+        }
+
+        .theme-toggle-icon i {
+          position: absolute;
+          left: 50%;
+          top: 50%;  /* 添加 top: 50% */
+          transform-origin: center;
+          transform: translate(-50%, -50%) translateY(0);  /* 添加 -50% 垂直居中 */
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-toggle-icon i:nth-child(1) {
+          transform: translate(-50%, -50%) translateY(0);
+        }
+
+        .theme-toggle-icon i:nth-child(2) {
+          transform: translate(-50%, -50%) translateY(100%);
+        }
+
+        .theme-toggle-icon.dark i:nth-child(1) {
+          transform: translate(-50%, -50%) translateY(-100%);
+        }
+
+        .theme-toggle-icon.dark i:nth-child(2) {
+          transform: translate(-50%, -50%) translateY(0);
+        }
+
+        .settings-icon {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .settings-icon:hover,
+        .settings-icon:active {
+            transform: rotate(360deg);
+        }
+
+        .history-icon {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .history-icon:hover,
+        .history-icon:active {
+            transform: rotate(-360deg);
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            align-items: center;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toolbar-btn {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .exit-conversation-btn {
+            position: relative;
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .active-conversation .exit-conversation-btn {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .active-conversation .toolbar-btn:not(.exit-conversation-btn) {
+            transform: translateX(8px); /* 调整这个值可以改变推移的距离 */
+        }
+
+        /* 添加一些样式 */
+        .setting-helper-text {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.54);
+            margin-top: 4px;
+        }
+
+        .mdui-theme-dark .setting-helper-text {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 历史记录项样式 */
+        .chat-history-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s;
+        }
+
+        .mdui-theme-dark .chat-history-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .chat-history-item:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        .mdui-theme-dark .chat-history-item:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .history-item-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-main-info {
+            flex: 1;
+            min-width: 0; /* 防止flex子项溢出 */
+        }
+
+        .history-title {
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: var(--text-color);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.54);
+        }
+
+        .mdui-theme-dark .history-meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .history-time, .history-count {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .history-time i, .history-count i {
+            font-size: 16px;
+        }
+
+        .history-actions {
+            padding-left: 16px;
+        }
+
+        /* 选择模式下的样式 */
+        .isSelectMode .chat-history-item {
+            padding-right: 8px;
+        }
+
+        /* 历史记录项样式优化 */
+        .chat-history-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .history-info {
+            flex: 1;
+            min-width: 0; /* 防止flex子项溢出 */
+        }
+
+        .history-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 4; /* 限制最多显示4行 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+            margin: 4px 0;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--model-name-color);
+            flex-wrap: wrap;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 4px;
+            padding: 0;
+        }
+
+        .history-actions .mdui-btn-icon {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+        }
+
+        /* 移动端适配优化 */
+        @media (max-width: 768px) {
+            .chat-history-item {
+                padding: 10px;
+            }
+            
+            .history-title {
+                font-size: 13px;
+                line-height: 1.3;
+            }
+            
+            .history-meta {
+                font-size: 11px;
+                gap: 8px;
+            }
+            
+            .history-actions .mdui-btn-icon {
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+            }
+            
+            .history-actions .mdui-icon {
+                font-size: 18px;
+            }
+            
+            /* 优化移动端选择框大小 */
+            .history-checkbox .mdui-checkbox-icon {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .chat-history-item {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .chat-history-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 添加触摸反馈效果 */
+        .chat-history-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-history-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(var(--ripple-color, 0, 0, 0), 0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .chat-history-item:active::after {
+            opacity: 1;
+        }
+
+        .dark-mode .chat-history-item::after {
+            --ripple-color: 255, 255, 255;
+        }
+
+        /* 移动设备适配 */
+        @media (max-width: 600px) {
+            .chat-history-item {
+                padding: 8px 10px;
+            }
+            
+            .history-title {
+                font-size: 13px;
+                margin-bottom: 2px;
+            }
+            
+            .history-meta {
+                font-size: 11px;
+                gap: 8px;
+            }
+            
+            .history-time i, .history-count i {
+                font-size: 13px;
+            }
+            
+            .history-count {
+                min-width: 40px;
+            }
+            
+            /* 在移动设备上优化选择框的位置 */
+            .history-actions {
+                padding-left: 4px;
+            }
+            
+            .mdui-checkbox-icon {
+                transform: scale(0.9);
+            }
+        }
+
+        /* 选择模式下的样式 */
+        .isSelectMode .chat-history-item {
+            padding-right: 6px;
+        }
+
+        /* 内容提要按钮样式 */
+        .elevator-btn.summary {
+            background-color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        
+        .elevator-btn.summary:hover {
+            background-color: var(--primary-color-dark);
+        }
+        
+        .elevator-btn.summary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 内容提要气泡样式 */
+        .summary-bubble {
+            background-color: #ffd700 !important;
+            color: #000 !important;
+        }
+        
+        .summary-bubble .model-name {
+            color: #8b7355 !important;
+        }
+        
+        .circle-button .emoji {
+            font-size: 16px;
+            line-height: 1;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* 确保 emoji 在暗色模式下也清晰可见 */
+        .dark-mode .circle-button .emoji {
+            filter: none;
+        }
+
+        /* 修改圆形按钮样式 */
+        .circle-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 24px; /* 调整图标大小 */
+            padding: 0; /* 移除内边距 */
+            line-height: 1; /* 确保图标垂直居中 */
+            transition: all 0.3s ease;
+        }
+
+        /* 悬停效果 */
+        .circle-button:hover {
+            background: rgba(255, 223, 186, 0.2);
+            border-color: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        /* 点击效果 */
+        .circle-button:active {
+            background: rgba(255, 223, 186, 0.3);
+            border-color: rgba(255, 193, 7, 0.4);
+            color: #ffd700;
+        }
+
+        /* 暗色模式下的效果 */
+        .dark-mode .circle-button:hover {
+            background: rgba(255, 223, 186, 0.1);
+            border-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .dark-mode .circle-button:active {
+            background: rgba(255, 223, 186, 0.15);
+            border-color: rgba(255, 193, 7, 0.3);
+            color: #ffd700;
+        }
+
+        /* 修改圆形按钮样式 */
+        button.circle-button.material-icons {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+            line-height: 1;
+            transition: all 0.3s ease;
+            color: var(--text-color); /* 确保默认颜色正确 */
+        }
+
+        /* 悬停效果 */
+        button.circle-button.material-icons:hover {
+            background-color: rgba(255, 223, 186, 0.2) !important;
+            border-color: rgba(255, 193, 7, 0.3) !important;
+            color: #ffc107 !important;
+        }
+
+        /* 点击效果 */
+        button.circle-button.material-icons:active {
+            background-color: rgba(255, 223, 186, 0.3) !important;
+            border-color: rgba(255, 193, 7, 0.4) !important;
+            color: #ffd700 !important;
+        }
+
+        /* 添加模型链接样式 */
+        .model-link {
+            color: #ffc107;
+            text-decoration: none;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .model-link:hover {
+            background-color: rgba(255, 193, 7, 0.2);
+            text-decoration: none;
+        }
+
+        /* 高亮效果 */
+        @keyframes highlightMessage {
+            0% { background-color: rgba(255, 193, 7, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-message {
+            animation: highlightMessage 2s ease-out;
+        }
+
+        /* 暗色模式适配 */
+        .dark-mode .model-link {
+            color: #ffd700;
+        }
+
+        .dark-mode .model-link:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+
+        /* 暗色模式下的效果 */
+        .dark-mode button.circle-button.material-icons:hover {
+            background-color: rgba(255, 223, 186, 0.1) !important;
+            border-color: rgba(255, 193, 7, 0.2) !important;
+            color: #ffc107 !important;
+        }
+
+        .dark-mode button.circle-button.material-icons:active {
+            background-color: rgba(255, 223, 186, 0.15) !important;
+            border-color: rgba(255, 193, 7, 0.3) !important;
+            color: #ffd700 !important;
+        }
+
+        /* 添加旋转动画 */
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 加载状态的按钮样式 */
+        button.circle-button.material-icons.loading {
+            animation: rotate 1s linear infinite;
+            color: #ffc107 !important;
+            background-color: rgba(255, 223, 186, 0.2) !important;
+            border-color: rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .dark-mode button.circle-button.material-icons.loading {
+            background-color: rgba(255, 223, 186, 0.1) !important;
+            border-color: rgba(255, 193, 7, 0.2) !important;
+        }
+
+        /* 添加总结气泡在深色模式下的特殊样式 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] {
+            background-color: rgba(66, 66, 66, 0.8);  /* 深色但半透明的背景 */
+            border: 1px solid rgba(255, 255, 255, 0.2);  /* 浅色边框 */
+            color: #e0e0e0;  /* 更亮的文字颜色 */
+        }
+
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"]::before {
+            background-color: rgba(66, 66, 66, 0.8);  /* 匹配气泡背景色 */
+            border-right: 1px solid rgba(255, 255, 255, 0.2);  /* 匹配边框 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);  /* 匹配边框 */
+        }
+
+        /* 强调重要内容 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] strong,
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] h1,
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] h2,
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] h3 {
+            color: #90caf9;  /* 使用蓝色突出显示重要内容 */
+        }
+
+        /* 列表样式优化 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] ul,
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] ol {
+            color: #e0e0e0;  /* 确保列表文字清晰可见 */
+        }
+
+        /* 链接样式优化 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] a {
+            color: #64b5f6;  /* 更亮的链接颜色 */
+        }
+
+        /* 引用块样式优化 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] blockquote {
+            border-left-color: #64b5f6;  /* 更亮的引用边框 */
+            background-color: rgba(96, 125, 139, 0.2);  /* 稍微突出的背景 */
+        }
+
+        /* 深色模式下内容提要气泡的文字颜色 */
+        .dark-mode .bubble.ai-bubble[data-model="💡内容提要"] {
+            color: #ffffff;  /* 纯白色文字 */
+        }
+
+        @font-face {
+          font-family: 'Claude';
+          src: url('https://ai.xinu.ink/claude.ttf') format('truetype');
+        }
+
+        /* 为包含英文字母和数字的元素应用 Claude 字体 */
+        body {
+          font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 确保输入框和按钮也使用 Claude 字体 */
+        input, 
+        button,
+        textarea,
+        .mdui-textfield-input {
+          font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+
+        /* 确保对话气泡中的英文和数字使用 Claude 字体 */
+        .bubble {
+          font-family: 'Claude', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 确保代码块中的内容使用 Claude 字体 */
+        pre, code {
+          font-family: 'Claude', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        }
+
+        /* 设置组标题样式优化 */
+        .settings-group-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-color);
+            font-size: 1.2em;  /* 增大组标题字号 */
+            font-weight: 600;  /* 加粗组标题 */
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;  /* 增加字间距 */
+        }
+
+        .settings-group-title .mdui-icon {
+            font-size: 22px;  /* 增大图标尺寸 */
+            opacity: 0.9;
+        }
+
+        /* 设置项样式优化 */
+        .settings-item {
+            display: flex;
+            align-items: center;  /* 改为居中对齐 */
+            padding: 14px 0;  /* 增加上下间距 */
+            margin-bottom: 4px;
+            position: relative;
+        }
+
+        .settings-item-content {
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        /* 设置项标题样式 */
+        .settings-item-title {
+            font-size: 1.05em;  /* 适当增大设置项标题 */
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 设置项描述文字样式 */
+        .settings-item-desc {
+            font-size: 0.9em;
+            color: var(--model-name-color);
+            opacity: 0.85;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        /* 图标样式优化 */
+        .item-icon {
+            font-size: 20px;
+            color: var(--text-color);
+            opacity: 0.8;
+            flex-shrink: 0;  /* 防止图标被压缩 */
+        }
+
+        /* 选择框和输入框样式 */
+        .settings-item .mdui-select,
+        .settings-item .mdui-textfield {
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        /* 设置组之间的间距 */
+        .settings-group {
+            margin-bottom: 32px;  /* 增加组间距 */
+            padding: 0 4px;  /* 添加左右内边距 */
+        }
+
+        /* 标签页样式优化 */
+        .mdui-tab {
+            margin-bottom: 24px;
+            background-color: var(--app-background-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mdui-tab a {
+            display: flex;
+            align-items: center;  /* 改为水平排列 */
+            justify-content: center;
+            gap: 8px;
+            height: 48px;
+            font-size: 1.05em;
+            font-weight: 500;
+        }
+
+        .mdui-tab .mdui-icon {
+            margin: 0;  /* 移除图标边距 */
+            font-size: 20px;
+        }
+
+        /* 复选框样式优化 */
+        .mdui-checkbox {
+            padding-left: 26px;  /* 调整复选框位置 */
+        }
+
+        .mdui-checkbox-icon {
+            top: 50%;  /* 垂直居中复选框 */
+            transform: translateY(-50%);
+        }
+
+        /* 按钮样式优化 */
+        .settings-item .mdui-btn {
+            margin: 8px 0;
+            padding: 0 16px;
+            height: 36px;
+            line-height: 36px;
+        }
+
+        /* 暗色模式适配 */
+        .dark-mode .settings-group-title {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .settings-item-desc {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 添加hover效果 */
+        .settings-item:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .dark-mode .settings-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        /* 添加过渡效果 */
+        .settings-item,
+        .settings-item-title,
+        .settings-item-desc,
+        .item-icon {
+            transition: all 0.3s ease;
+        }
+
+        /* 设置组样式优化 */
+        .settings-group {
+            margin-bottom: 36px;  /* 增加组间距 */
+            padding: 8px 12px;    /* 增加内边距 */
+        }
+
+        /* 设置组标题样式优化 */
+        .settings-group-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;           /* 增加图标和文字间距 */
+            color: var(--text-color);
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 24px;  /* 增加标题和内容间距 */
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        /* 设置项样式优化 */
+        .settings-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px 0;      /* 增加上下内边距 */
+            margin-bottom: 8px;   /* 保持项目间距 */
+            position: relative;
+        }
+
+        /* 设置项内容样式 */
+        .settings-item-content {
+            flex: 1;
+            margin-left: 16px;    /* 增加左侧间距 */
+        }
+
+        /* 设置项标题样式 */
+        .settings-item-title {
+            font-size: 1.05em;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 8px;   /* 增加标题和描述间距 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 设置项描述文字样式 */
+        .settings-item-desc {
+            font-size: 0.9em;
+            color: var(--model-name-color);
+            opacity: 0.85;
+            margin-top: 4px;
+            line-height: 1.6;    /* 增加描述文字行高 */
+        }
+
+        /* 选择框和输入框容器样式 */
+        .settings-item .mdui-select,
+        .settings-item .mdui-textfield {
+            margin-top: 12px;     /* 增加输入框上边距 */
+            width: 100%;
+        }
+
+        /* 复选框样式优化 */
+        .mdui-checkbox {
+            padding-left: 32px;   /* 增加复选框左边距 */
+        }
+
+        /* 标签页样式优化 */
+        .mdui-tab {
+            margin-bottom: 36px;  /* 增加标签页底部间距 */
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 设置对话框内容区域样式 */
+        .mdui-dialog-content {
+            padding: 24px 0;     /* 移除左右内边距，由设置组提供 */
+        }
+
+        /* 分隔线样式 */
+        .settings-group:not(:last-child) {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-bottom: 24px;  /* 增加分隔线上方间距 */
+        }
+
+        .dark-mode .settings-group:not(:last-child) {
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 悬停效果优化 */
+        .settings-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 16px 12px;   /* 悬停时增加左右内边距 */
+            margin: 0 -12px;      /* 补偿内边距造成的位移 */
+            border-radius: 8px;   /* 添加圆角 */
+        }
+
+        .dark-mode .settings-item:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* 图标样式优化 */
+        .item-icon {
+            font-size: 20px;
+            margin-right: 16px;   /* 增加图标右边距 */
+            color: var(--text-color);
+            opacity: 0.8;
+            padding: 4px;         /* 增加图标内边距 */
+        }
+
+        /* 添加过渡效果 */
+        .settings-item,
+        .settings-item-title,
+        .settings-item-desc,
+        .item-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 更新样式部分 */
+
+        /* 设置组样式优化 */
+        .settings-group {
+            margin-bottom: 48px;  /* 增加组间距 */
+            padding: 0 16px 32px; /* 增加内边距和底部间距 */
+            position: relative;   /* 为分割线定位 */
+        }
+
+        /* 最后一个设置组不需要margin-bottom */
+        .settings-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* 设置组标题样式优化 */
+        .settings-group-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-color);
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 28px;  /* 增加标题和内容的间距 */
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        /* 设置项样式优化 */
+        .settings-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px 0;      /* 增加上下内边距 */
+            margin-bottom: 12px;  /* 增加项目间距 */
+            position: relative;
+        }
+
+        /* 最后一个设置项不需要margin-bottom */
+        .settings-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 设置项内容样式 */
+        .settings-item-content {
+            flex: 1;
+            margin-left: 16px;
+            min-height: 48px;    /* 确保最小高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 设置项标题样式 */
+        .settings-item-title {
+            font-size: 1.05em;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        /* 设置项描述文字样式 */
+        .settings-item-desc {
+            font-size: 0.9em;
+            color: var(--model-name-color);
+            opacity: 0.85;
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+
+        /* 分割线样式 */
+        .settings-group:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-color);
+            opacity: 0.1;
+        }
+
+        /* 选择框和输入框容器样式 */
+        .settings-item .mdui-select,
+        .settings-item .mdui-textfield {
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        /* 复选框样式优化 */
+        .mdui-checkbox {
+            padding-left: 32px;
+            min-height: 48px;    /* 确保最小高度 */
+            display: flex;
+            align-items: center;
+        }
+
+        .mdui-checkbox-icon {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* 标签页样式优化 */
+        .mdui-tab {
+            margin-bottom: 36px;  /* 增加标签页底部间距 */
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 设置对话框内容区域样式 */
+        .mdui-dialog-content {
+            padding: 24px 0;     /* 移除左右内边距，由设置组提供 */
+        }
+
+        /* 悬停效果优化 */
+        .settings-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 20px 16px;  /* 增加悬停时的内边距 */
+            margin: 0 -16px;     /* 补偿内边距造成的位移 */
+            border-radius: 8px;
+        }
+
+        /* 图标样式优化 */
+        .item-icon {
+            font-size: 20px;
+            margin-right: 16px;
+            color: var(--text-color);
+            opacity: 0.8;
+            padding: 4px;
+            margin-top: 8px;    /* 调整图标垂直位置 */
+        }
+
+        /* 暗色模式适配 */
+        .dark-mode .settings-group:not(:last-child)::after {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 确保输入框和选择框样式正确 */
+        .mdui-textfield-input,
+        .mdui-select {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-top: 8px;
+        }
+
+        /* 按钮样式优化 */
+        .settings-item .mdui-btn {
+            margin: 16px 0 8px;
+            padding: 0 24px;
+            height: 40px;
+            line-height: 40px;
+        }
+
+        /* 添加过渡效果 */
+        .settings-item,
+        .settings-item-title,
+        .settings-item-desc,
+        .item-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 设置对话框整体布局优化 */
+        #settings-dialog {
+            max-width: 600px;  /* 限制最大宽度 */
+            margin: auto;
+            max-height: 85vh;
+            animation: dialogSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes dialogSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 标签页样式优化 */
+        .settings-dialog .mdui-tab {
+            background: var(--app-background-color);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 8px 0;
+            margin: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-dialog .mdui-tab a {
+            min-height: 48px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-dialog .mdui-tab a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--mdui-color-theme);
+            transition: all 0.3s ease;
+        }
+
+        .settings-dialog .mdui-tab a.mdui-tab-active::after {
+            width: 100%;
+            left: 0;
+        }
+
+        /* 设置组样式 */
+        .settings-section {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            animation: sectionFadeIn 0.4s ease-out;
+        }
+
+        @keyframes sectionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 设置组标题样式 */
+        .settings-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .settings-section-header i {
+            font-size: 20px;
+            color: var(--mdui-color-theme);
+            transition: transform 0.3s ease;
+        }
+
+        .settings-section-header:hover i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* 设置项样式 */
+        .settings-item {
+            padding: 16px;
+            margin: 8px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            background: transparent;
+        }
+
+        .settings-item:hover {
+            background: var(--hover-color, rgba(0, 0, 0, 0.02));
+            transform: translateX(4px);
+        }
+
+        .dark-mode .settings-item:hover {
+            background: var(--hover-color, rgba(255, 255, 255, 0.05));
+        }
+
+        /* 设置项内容样式 */
+        .settings-item-content {
+            flex: 1;
+            margin-right: 16px;
+        }
+
+        .item-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+
+        .item-description {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        /* 开关样式优化 */
+        .mdui-switch {
+            --switch-width: 40px;
+            --switch-height: 20px;
+            padding: 0;
+        }
+
+        .mdui-switch-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 选择框样式优化 */
+        .settings-item-action .mdui-select {
+            min-width: 120px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .settings-item-action .mdui-select:hover {
+            border-color: var(--mdui-color-theme);
+        }
+
+        /* 输入框样式优化 */
+        .mdui-textfield-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .mdui-textfield-input:focus {
+            border-color: var(--mdui-color-theme);
+            box-shadow: 0 0 0 2px rgba(var(--mdui-color-theme-rgb), 0.1);
+        }
+
+        /* 按钮悬停效果 */
+        .settings-dialog .mdui-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-dialog .mdui-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: currentColor;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .settings-dialog .mdui-btn:hover::after {
+            opacity: 0.1;
+        }
+
+        /* 滚动条美化 */
+        .settings-dialog .mdui-dialog-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .settings-dialog .mdui-dialog-content::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-color, rgba(0, 0, 0, 0.2));
+            border-radius: 3px;
+        }
+
+        .dark-mode .settings-dialog .mdui-dialog-content::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-color, rgba(255, 255, 255, 0.2));
+        }
+
+        /* 底部操作栏样式 */
+        .settings-dialog .mdui-dialog-actions {
+            position: sticky;
+            bottom: 0;
+            background-color: var(--app-background-color);
+            z-index: 2;
+            margin-top: 16px;
+            padding: 12px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 底部按钮样式 */
+        .settings-dialog .mdui-dialog-actions .mdui-btn {
+            min-width: 76px;
+            padding: 0 16px;
+            height: 36px;
+            line-height: 36px;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 取消按钮悬停效果 */
+        .settings-dialog .mdui-dialog-actions .mdui-btn:not(.mdui-color-theme):hover {
+            background-color: var(--hover-color, rgba(0, 0, 0, 0.05));
+        }
+
+        /* 保存按钮悬停效果 */
+        .settings-dialog .mdui-dialog-actions .mdui-btn.mdui-color-theme {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-dialog .mdui-dialog-actions .mdui-btn.mdui-color-theme:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .settings-dialog .mdui-dialog-actions {
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .dark-mode .settings-dialog .mdui-dialog-actions .mdui-btn:not(.mdui-color-theme):hover {
+            background-color: var(--hover-color, rgba(255, 255, 255, 0.05));
+        }
+
+        /* 内容提要按钮样式 */
+        .elevator-buttons .elevator-btn.summary {
+            background-color: rgba(255, 196, 0, 0.1); /* 更温暖的金黄色背景 */
+            border: 1px solid rgba(255, 196, 0, 0.3); /* 更温暖的金黄色边框 */
+        }
+
+        .elevator-buttons .elevator-btn.summary:hover {
+            background-color: rgba(255, 196, 0, 0.2); /* 悬停时加深背景色 */
+        }
+
+        .elevator-buttons .elevator-btn.summary i {
+            color: #FFC400; /* 更温暖的金黄色图标 */
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .elevator-buttons .elevator-btn.summary {
+            background-color: rgba(255, 196, 0, 0.15);
+            border: 1px solid rgba(255, 196, 0, 0.4);
+        }
+
+        .dark-mode .elevator-buttons .elevator-btn.summary:hover {
+            background-color: rgba(255, 196, 0, 0.25);
+        }
+
+        /* Safari 兼容性 */
+        @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+            .elevator-buttons .elevator-btn,
+            .elevator-buttons .elevator-btn.summary {
+                -webkit-backdrop-filter: blur(8px);
+                backdrop-filter: blur(8px);
+            }
+        }
+
+        /* 移动端交互优化 */
+        @media (max-width: 768px) {
+            /* 确保按钮有足够大的点击区域 */
+            .mdui-btn,
+            .elevator-btn,
+            .settings-item {
+                min-height: 44px; /* iOS 建议的最小点击区域 */
+                touch-action: manipulation; /* 优化触摸处理 */
+            }
+            
+            /* 禁用悬停效果，改为 active 状态 */
+            .settings-item:hover {
+                transform: none;
+            }
+            
+            .settings-item:active {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+            
+            /* 增加按钮之间的间距，防止误触 */
+            .elevator-buttons .elevator-btn {
+                margin: 8px 0;
+            }
+            
+            /* 优化触摸反馈 */
+            * {
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* 确保内容可滚动 */
+            .mdui-dialog-content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* 移动端按钮样式优化 */
+        @media (max-width: 768px) {
+            /* 输入栏按钮样式 */
+            .input-container .mdui-btn,
+            .input-container .mdui-btn-icon,
+            .input-container .icon-button {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+                padding: 8px !important;
+                flex-shrink: 0; /* 防止按钮被压缩 */
+                aspect-ratio: 1; /* 保持正方形 */
+            }
+            
+            /* 发送按钮特殊处理 */
+            .input-container .mdui-btn-raised {
+                width: auto !important;
+                min-width: 40px !important;
+                height: 40px !important;
+                min-height: 40px !important;
+                padding: 0 16px !important;
+                aspect-ratio: unset; /* 发送按钮不需要保持正方形 */
+            }
+            
+            /* 电梯按钮和内容提要按钮 */
+            .elevator-buttons .elevator-btn {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+                margin: 6px 0;
+                flex-shrink: 0;
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* 调整图标大小 */
+            .elevator-buttons .elevator-btn i,
+            .input-container .mdui-btn i,
+            .input-container .icon-button i {
+                font-size: 20px;
+            }
+        }
+
+        /* 移动端按钮样式优化 */
+        @media (max-width: 768px) {
+            /* 顶部栏按钮样式 */
+            .top-bar .mdui-btn,
+            .top-bar .mdui-btn-icon,
+            .toolbar-btn,
+            .settings-icon,
+            .history-icon {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+                padding: 8px !important;
+                flex-shrink: 0;
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* 顶部栏图标大小 */
+            .top-bar .mdui-btn i,
+            .top-bar .mdui-icon {
+                font-size: 20px;
+            }
+            
+            /* 主题切换按钮特殊处理 */
+            .theme-toggle-icon {
+                width: 24px !important;
+                height: 24px !important;
+                min-width: 24px !important;
+                min-height: 24px !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+                flex-shrink: 0;
+                aspect-ratio: 1;
+                margin-right: 8px; /* 添加右边距，让按钮整体向左移动一点 */
+            }
+            
+            /* 保持图标大小和动画效果 */
+            .theme-toggle-icon i {
+                position: absolute;
+                font-size: 20px;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                transform: translateX(0); /* 确保图标居中 */
+                left: 50%;
+                transform: translateX(-50%); /* 使用 transform 来精确居中 */
+            }
+        }
+
+        /* 主题预览区域样式 */
+        .theme-preview {
+            margin: 16px 0;
+            padding: 16px;
+            border-radius: 8px;
+            background: var(--app-background-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-title {
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        .preview-content {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .preview-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            background-color: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preview-text {
+            color: var(--primary-color);
+        }
+
+        /* 颜色选择器样式 */
+        .settings-item-action input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .theme-preview {
+            background: var(--app-background-color);
+            border-color: var(--border-color);
+        }
+
+        /* 主题预览区域添加顶部栏预览 */
+        .preview-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .preview-header {
+            background-color: var(--header-color);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        /* 已保存配色列表样式 */
+        .saved-themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        /* 修改卡片样式，确保圆角始终保持 */
+        .saved-theme-item {
+            background: var(--card-background, #fff);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            /* 添加内边距，让内容往下移 */
+            padding-top: 8px;
+        }
+
+        /* 修改顶部渐变条样式，确保不会超出圆角 */
+        .saved-theme-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            /* 删除这行，改为在HTML中动态设置 */
+            /* background: linear-gradient(to right, var(--primary-color), var(--accent-color)); */
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .dark-mode .saved-theme-item {
+            background: var(--card-background-dark, #2c2c2c);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .saved-theme-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 颜色预览区域 */
+        .theme-preview-colors {
+            display: flex;
+            justify-content: space-around;
+            /* 调整内边距 */
+            padding: 20px 16px;
+            gap: 12px;
+        }
+
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .dark-mode .color-preview {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .color-preview:hover {
+            transform: scale(1.1);
+        }
+
+        /* 主题信息 */
+        .theme-info {
+            padding: 0 16px 12px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            /* 增加上边距 */
+            margin-top: 12px;
+        }
+
+        .dark-mode .theme-info {
+            border-top-color: rgba(255,255,255,0.1);
+        }
+
+        .theme-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-color);
+            /* 调整上下边距 */
+            margin: 16px 0;
+        }
+
+        /* 操作按钮 */
+        .theme-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .theme-actions .mdui-btn-icon {
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+        }
+
+        .theme-actions .mdui-btn-icon:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .dark-mode .theme-actions .mdui-btn-icon:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .saved-themes {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 12px;
+            }
+
+            .color-preview {
+                width: 32px;
+                height: 32px;
+            }
+
+            .theme-name {
+                font-size: 14px;
+            }
+
+            .theme-actions .mdui-btn-icon {
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+            }
+        }
+
+        /* 保存配色对话框样式 */
+        #save-theme-dialog .mdui-dialog-content {
+            padding: 24px;
+        }
+
+        /* 输入框容器样式 */
+        #save-theme-dialog .mdui-textfield {
+            margin-bottom: 24px;
+        }
+
+        /* 输入框样式 */
+        #save-theme-dialog .mdui-textfield-input {
+            font-size: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--app-background-color);
+            transition: all 0.3s ease;
+        }
+
+        #save-theme-dialog .mdui-textfield-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+        }
+
+        /* 颜色预览容器样式 */
+        .theme-preview-container {
+            background: var(--card-background, #fff);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 颜色预览网格 */
+        .preview-colors {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* 单个颜色项样式 */
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 8px;
+            background: var(--app-background-color);
+            transition: all 0.3s ease;
+        }
+
+        .color-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* 颜色预览圆形 */
+        .color-item .color-preview {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        /* 颜色标签样式 */
+        .color-item span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+            opacity: 0.85;
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .theme-preview-container {
+            background: var(--card-background-dark, #2c2c2c);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .dark-mode .color-item {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .dark-mode .color-item .color-preview {
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .dark-mode .color-item span {
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* 对话框按钮样式 */
+        #save-theme-dialog .mdui-dialog-actions {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        #save-theme-dialog .mdui-dialog-actions .mdui-btn {
+            min-width: 90px;
+            height: 36px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .preview-colors {
+                gap: 12px;
+            }
+
+            .color-item {
+                padding: 12px;
+            }
+
+            .color-item .color-preview {
+                width: 40px;
+                height: 40px;
+            }
+
+            .color-item span {
+                font-size: 13px;
+            }
+        }
+
+        /* 添加以下样式 */
+
+        /* AI消息气泡中的芯片样式 */
+        .ai-bubble .mdui-chip {
+            margin-bottom: 8px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 32px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        /* 深色模式下的芯片样式 */
+        .dark-mode .ai-bubble .mdui-chip {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 芯片图标容器样式 */
+        .ai-bubble .mdui-chip .mdui-chip-icon {
+            background-color: rgba(0, 0, 0, 0.08);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;  /* 垂直居中 */
+            justify-content: center;  /* 水平居中 */
+            font-size: 16px;
+            margin-right: 8px;
+            padding: 0;
+            line-height: 1;  /* 重要：确保 emoji 不受行高影响 */
+            position: relative;  /* 添加相对定位 */
+        }
+
+        /* 调整 emoji 的位置 */
+        .ai-bubble .mdui-chip .mdui-chip-icon span,
+        .ai-bubble .mdui-chip .mdui-chip-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(1px);  /* 微调垂直位置 */
+        }
+
+        /* 移动端适配时也保持居中 */
+        @media (max-width: 768px) {
+            .ai-bubble .mdui-chip .mdui-chip-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 14px;
+                margin-right: 6px;
+                line-height: 1;
+            }
+        }
+
+        /* 深色模式下的图标容器样式 */
+        .dark-mode .ai-bubble .mdui-chip .mdui-chip-icon {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 芯片标题样式 */
+        .ai-bubble .mdui-chip .mdui-chip-title {
+            font-size: 13px;
+            opacity: 0.85;
+            padding: 0 8px;
+            color: rgba(0, 0, 0, 0.87);  /* 浅色模式下的文字颜色 */
+            font-weight: 500;
+            line-height: 32px;
+        }
+
+        /* 深色模式下的标题样式 */
+        .dark-mode .ai-bubble .mdui-chip .mdui-chip-title {
+            color: rgba(255, 255, 255, 0.95);  /* 深色模式下更亮的文字颜色 */
+        }
+
+        /* 悬停效果 */
+        .ai-bubble .mdui-chip:hover {
+            background-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .dark-mode .ai-bubble .mdui-chip:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .ai-bubble .mdui-chip {
+                height: 28px;  /* 移动端稍微小一点，但仍然比原来大 */
+                border-radius: 14px;
+                padding: 0 6px;
+            }
+            
+            .ai-bubble .mdui-chip .mdui-chip-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 14px;
+                margin-right: 6px;
+            }
+            
+            .ai-bubble .mdui-chip .mdui-chip-title {
+                font-size: 12px;
+                padding: 0 6px;
+                line-height: 28px;
+            }
+        }
+
+        /* 历史记录对话框样式 */
+        .history-dialog {
+            max-width: 800px;
+            width: 90vw;
+            height: 80vh;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部区域样式 */
+        .history-header {
+            padding: 16px 24px;
+            background: var(--header-color);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 内容区域样式 */
+        .history-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch; /* 优化 iOS 滚动 */
+            position: relative;
+            height: calc(100% - 180px); /* 减去头部高度 */
+            box-sizing: border-box;
+        }
+
+        /* 优化滚动条样式 */
+        .history-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .history-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .dark-mode .history-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .history-dialog {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .history-header {
+                padding: 12px 16px;
+            }
+            
+            .history-content {
+                height: calc(100% - 200px); /* 移动端头部可能更高 */
+                padding: 12px;
+            }
+        }
+
+        /* 确保对话框内容不会溢出 */
+        .mdui-dialog-content {
+            max-height: none !important; /* 覆盖 MDUI 默认样式 */
+            height: 100%;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 空状态垂直居中 */
+        .empty-history {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            text-align: center;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        /* 工具栏样式 */
+        .history-toolbar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: nowrap; /* 防止元素换行 */
+        }
+
+        /* 搜索框容器样式优化 */
+        .search-wrapper {
+            flex: 1;
+            min-width: 180px;
+            max-width: 480px; /* 限制最大宽度 */
+            height: 40px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .search-wrapper:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-wrapper:focus-within {
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .search-wrapper i {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+        }
+
+        .search-input {
+            border: none;
+            background: none;
+            height: 100%;
+            padding: 0 12px;
+            color: white;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        /* 操作按钮区域 */
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            height: 40px;
+            flex-shrink: 0; /* 防止按钮被压缩 */
+        }
+
+        /* 排序选择框 */
+        .sort-wrapper {
+            position: relative;
+            height: 40px;
+            width: 120px; /* 固定宽度 */
+        }
+
+        .sort-wrapper .mdui-select {
+            width: 100%;
+            height: 100%;
+            padding: 0 32px 0 12px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 40px;
+        }
+
+        /* 批量操作按钮 */
+        .action-btn {
+            height: 40px;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 8px;
+            gap: 8px;
+            min-width: 100px; /* 设置最小宽度 */
+        }
+
+        /* 响应式布局优化 */
+        @media (max-width: 1024px) {
+            .search-wrapper {
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .history-toolbar {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .search-wrapper {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .toolbar-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .sort-wrapper {
+                flex: 1;
+                width: auto;
+                min-width: 140px;
+            }
+            
+            .action-btn {
+                flex: 1;
+                min-width: 0;
+                justify-content: center;
+            }
+        }
+
+        /* 超窄屏幕适配 */
+        @media (max-width: 480px) {
+            .toolbar-actions {
+                gap: 8px;
+            }
+            
+            .sort-wrapper {
+                min-width: 120px;
+            }
+            
+            .action-btn {
+                padding: 0 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .action-btn span {
+                display: none;
+            }
+            
+            .action-btn {
+                width: 40px;
+                padding: 0;
+                min-width: 40px;
+            }
+            
+            .action-btn i {
+                margin: 0;
+                font-size: 20px;
+            }
+            
+            .sort-wrapper {
+                min-width: 100px;
+            }
+        }
+
+        /* 统一的悬停效果 */
+        .sort-wrapper .mdui-select:hover,
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* 深色模式适配 */
+        .dark-mode .search-wrapper,
+        .dark-mode .sort-wrapper .mdui-select,
+        .dark-mode .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .dark-mode .search-wrapper:hover,
+        .dark-mode .sort-wrapper .mdui-select:hover,
+        .dark-mode .action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* 批量操作工具栏容器 */
+        .bulk-actions-container {
+            overflow: hidden; /* 确保动画不会溢出 */
+            transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 0; /* 初始高度为0 */
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 -24px; /* 延伸到边缘 */
+            padding: 0 24px;
+        }
+
+        /* 显示时的高度 */
+        .bulk-actions-container.show {
+            height: 60px; /* 根据实际内容调整 */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 批量操作按钮组 */
+        .bulk-actions {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 显示时的按钮组动画 */
+        .bulk-actions-container.show .bulk-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 按钮动画 */
+        .bulk-actions .mdui-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 6px 16px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 显示时的按钮动画 */
+        .bulk-actions-container.show .mdui-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 为每个按钮设置不同的延迟 */
+        .bulk-actions-container.show .mdui-btn:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .bulk-actions-container.show .mdui-btn:nth-child(2) {
+            transition-delay: 0.15s;
+        }
+
+        .bulk-actions-container.show .mdui-btn:nth-child(3) {
+            transition-delay: 0.2s;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .bulk-actions-container {
+                margin: 0 -16px;
+                padding: 0 16px;
+            }
+            
+            .bulk-actions-container.show {
+                height: 70px; /* 移动端稍大一些 */
+            }
+            
+            .bulk-actions {
+                padding: 15px 0;
+            }
+        }
+
+        /* 定义按钮缩放淡入动画 */
+        @keyframes fadeScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 优化批量选择模式切换时的动画 */
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 6px 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .action-btn i {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .action-btn.active {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .action-btn.active i {
+            transform: rotate(180deg);
+        }
+
+        /* 选择框动画 */
+        .select-box {
+            animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 选中状态的动画过渡 */
+        .history-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .history-item.selected {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* 移动端适配优化 */
+        @media (max-width: 768px) {
+            .bulk-actions {
+                padding: 8px 0;
+            }
+            
+            .bulk-actions .mdui-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 8px;
+            }
+            
+            /* 在移动端保持动画,但稍微加快速度 */
+            .bulk-actions,
+            .bulk-actions .mdui-btn {
+                animation-duration: 0.25s;
+            }
+        }
+
+        /* 内容区域样式 */
+        .history-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 历史记录项样式 */
+        .history-item {
+            background: var(--background-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .history-item.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-header {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: var(--model-name-color);
+            margin-bottom: 8px;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .item-preview {
+            font-size: 0.9rem;
+            color: var(--model-name-color);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-item:hover .item-actions {
+            opacity: 1;
+        }
+
+        /* 空状态样式 */
+        .empty-history {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--model-name-color);
+            gap: 16px;
+        }
+
+        .empty-history i {
+            font-size: 48px;
+            opacity: 0.5;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .history-dialog {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .history-header {
+                padding: 12px 16px;
+            }
+            
+            .history-toolbar {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .search-wrapper {
+                width: 100%;
+            }
+            
+            .toolbar-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .history-item {
+                padding: 12px;
+            }
+            
+            .item-actions {
+                opacity: 1;
+                position: absolute;
+                right: 12px;
+                top: 12px;
+            }
+        }
+
+        /* 修改排序选择的样式 */
+        .sort-wrapper {
+            position: relative;
+            height: 36px; /* 固定高度,与其他按钮对齐 */
+        }
+
+        .sort-wrapper .mdui-select {
+            color: white;
+            border: none;
+            padding: 0 36px 0 16px; /* 调整内边距 */
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            min-width: 130px;
+            height: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* 悬停效果 */
+        .sort-wrapper .mdui-select:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* 聚焦效果 */
+        .sort-wrapper .mdui-select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 优化下拉箭头图标 */
+        .sort-wrapper::after {
+            content: 'expand_more';
+            font-family: 'Material Icons';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        /* 选择框打开时箭头旋转 */
+        .sort-wrapper.mdui-select-open::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* MDUI 下拉菜单样式优化 */
+        .mdui-select-menu {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            background: var(--app-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 0;
+            margin-top: 4px;
+            max-height: 300px;
+        }
+
+        .mdui-select-menu-item {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-height: 40px;
+        }
+
+        /* 选项悬停效果 */
+        .mdui-select-menu-item:hover {
+            background: rgba(var(--primary-color-rgb), 0.08);
+        }
+
+        /* 选中项样式 */
+        .mdui-select-menu-item[selected] {
+            color: var(--primary-color);
+            background: rgba(var(--primary-color-rgb), 0.05);
+            font-weight: 500;
+        }
+
+        /* 选中项添加图标 */
+        .mdui-select-menu-item[selected]::after {
+            content: 'check';
+            font-family: 'Material Icons';
+            position: absolute;
+            right: 12px;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .sort-wrapper {
+                width: 100%;
+                height: 40px; /* 移动端稍微大一点 */
+            }
+            
+            .sort-wrapper .mdui-select {
+                width: 100%;
+                padding: 0 40px 0 16px;
+                font-size: 0.95rem;
+            }
+            
+            .sort-wrapper::after {
+                right: 12px;
+                font-size: 22px;
+            }
+            
+            /* 移动端下拉菜单样式 */
+            .mdui-select-menu {
+                width: calc(100% - 32px) !important;
+                left: 16px !important;
+                right: 16px !important;
+                max-height: 45vh;
+                border-radius: 12px;
+                padding: 8px 0;
+            }
+            
+            .mdui-select-menu-item {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+                min-height: 44px;
+            }
+            
+            /* 添加触摸反馈 */
+            .mdui-select-menu-item:active {
+                background: rgba(var(--primary-color-rgb), 0.12);
+            }
+        }
+
+        /* 深色模式适配优化 */
+        .dark-mode .mdui-select-menu {
+            background: var(--app-background-color);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .dark-mode .mdui-select-menu-item {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark-mode .mdui-select-menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-mode .mdui-select-menu-item[selected] {
+            background: rgba(var(--primary-color-rgb), 0.15);
+        }
+
+        /* 动画优化 */
+        .mdui-select-menu {
+            animation: selectMenuIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+        }
+
+        @keyframes selectMenuIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scaleY(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scaleY(1);
+            }
+        }
+
+        /* 选项动画 */
+        .mdui-select-menu-item {
+            animation: itemFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        @keyframes itemFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 为每个选项添加延迟,创造连续展开效果 */
+        .mdui-select-menu-item:nth-child(1) { animation-delay: 0.05s; }
+        .mdui-select-menu-item:nth-child(2) { animation-delay: 0.1s; }
+        .mdui-select-menu-item:nth-child(3) { animation-delay: 0.15s; }
+
+        /* 工具栏操作按钮区域样式优化 */
+        .toolbar-actions {
+            display: flex;
+            gap: 8px; /* 减小间距 */
+            align-items: center;
+            height: 36px; /* 统一高度 */
+        }
+
+        /* 排序选择框容器样式优化 */
+        .sort-wrapper {
+            position: relative;
+            height: 36px;
+            min-width: 110px; /* 稍微减小最小宽度 */
+        }
+
+        .sort-wrapper .mdui-select {
+            color: white;
+            border: none;
+            padding: 0 32px 0 12px; /* 调整内边距 */
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* 批量选择按钮样式优化 */
+        .action-btn {
+            height: 36px; /* 统一高度 */
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            white-space: nowrap; /* 防止文字换行 */
+        }
+
+        .action-btn i {
+            font-size: 20px;
+        }
+
+        /* 按钮悬停效果 */
+        .action-btn:hover,
+        .sort-wrapper .mdui-select:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* 移动端适配优化 */
+        @media (max-width: 768px) {
+            .toolbar-actions {
+                width: 100%;
+                height: 40px; /* 移动端更大的点击区域 */
+                gap: 12px;
+            }
+            
+            .sort-wrapper {
+                flex: 1; /* 让选择框占据剩余空间 */
+                height: 40px;
+                min-width: 0; /* 移除最小宽度限制 */
+            }
+            
+            .sort-wrapper .mdui-select {
+                padding: 0 36px 0 14px;
+                font-size: 0.95rem;
+            }
+            
+            .action-btn {
+                height: 40px;
+                padding: 0 16px;
+                font-size: 0.95rem;
+            }
+            
+            /* 在较窄屏幕上隐藏按钮文字，只显示图标 */
+            @media (max-width: 360px) {
+                .action-btn span {
+                    display: none;
+                }
+                
+                .action-btn {
+                    padding: 0;
+                    width: 40px;
+                    justify-content: center;
+                }
+                
+                .action-btn i {
+                    margin: 0;
+                }
+            }
+        }
+
+        /* 深色模式下的背景色调整 */
+        .dark-mode .sort-wrapper .mdui-select,
+        .dark-mode .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dark-mode .sort-wrapper .mdui-select:hover,
+        .dark-mode .action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* 活跃状态样式 */
+        .action-btn.active {
+            background: rgba(var(--primary-color-rgb), 0.2);
+        }
+
+        .dark-mode .action-btn.active {
+            background: rgba(var(--primary-color-rgb), 0.25);
+        }
+
+        /* 确保下拉箭头位置正确 */
+        .sort-wrapper::after {
+            right: 10px;
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        /* 优化选择框打开状态 */
+        .sort-wrapper.mdui-select-open .mdui-select {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .dark-mode .sort-wrapper.mdui-select-open .mdui-select {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 工具栏操作按钮区域样式优化 */
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: stretch; /* 改为 stretch 让子元素高度一致 */
+            height: 40px; /* 统一高度为 40px */
+        }
+
+        /* 排序选择框容器样式优化 */
+        .sort-wrapper {
+            position: relative;
+            min-width: 110px;
+            display: flex; /* 添加 flex 布局 */
+            align-items: center; /* 垂直居中 */
+        }
+
+        .sort-wrapper .mdui-select {
+            color: white;
+            border: none;
+            padding: 0 32px 0 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            height: 40px; /* 固定高度为 40px */
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            line-height: 40px; /* 添加行高确保文字垂直居中 */
+        }
+
+        /* 批量选择按钮样式优化 */
+        .action-btn {
+            height: 40px; /* 统一高度为 40px */
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center; /* 添加水平居中 */
+            gap: 6px;
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+
+        /* 调整下拉箭头的位置 */
+        .sort-wrapper::after {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0.8;
+            line-height: 1; /* 确保图标垂直居中 */
+        }
+
+        /* 移动端适配优化 */
+        @media (max-width: 768px) {
+            .toolbar-actions {
+                width: 100%;
+                gap: 12px;
+            }
+            
+            .sort-wrapper {
+                flex: 1;
+            }
+            
+            .sort-wrapper .mdui-select {
+                padding: 0 36px 0 14px;
+                font-size: 0.95rem;
+            }
+            
+            /* 在较窄屏幕上隐藏按钮文字，只显示图标 */
+            @media (max-width: 360px) {
+                .action-btn {
+                    width: 40px; /* 保持正方形 */
+                    padding: 0;
+                }
+                
+                .action-btn span {
+                    display: none;
+                }
+                
+                .action-btn i {
+                    margin: 0;
+                }
+            }
+        }
+
+        /* 工具栏操作按钮容器 */
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto; /* 将操作按钮靠右对齐 */
+            flex-wrap: nowrap; /* 防止按钮换行 */
+        }
+
+        /* 排序下拉框包装器 */
+        .sort-wrapper {
+            min-width: 100px; /* 确保下拉框有足够宽度 */
+            margin-right: 8px; /* 与批量操作按钮保持间距 */
+        }
+
+        /* 操作按钮样式 */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap; /* 防止按钮文字换行 */
+            padding: 0 12px;
+            height: 36px;
+        }
+
+        .action-btn .mdui-icon {
+            font-size: 20px;
+            margin-right: 4px;
+        }
+
+        /* 历史记录工具栏响应式布局 */
+        @media (min-width: 600px) {
+            .history-toolbar {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .toolbar-actions {
+                flex: 0 0 auto; /* 防止工具栏挤压 */
+            }
+        }
+
+        /* 添加新的CSS变量应用 */
+        :root {
+            /* 已有的变量保持不变 */
+            --primary-color: #3f51b5;
+            --accent-color: #ff4081;
+            --header-color: #007bff;
+            
+            /* 新增衍生颜色变量 */
+            --text-primary: var(--text-primary);
+            --text-secondary: var(--text-secondary);
+            --button-primary: var(--button-primary);
+            --button-hover: var(--button-hover);
+            --link-color: var(--link-color);
+            --border-color: var(--border-color);
+            --background-primary: var(--background-primary);
+            --background-secondary: var(--background-secondary);
+            --highlight-color: var(--highlight-color);
+        }
+
+        /* 应用新的颜色变量 */
+        .mdui-btn:not(.mdui-btn-raised):not(.mdui-btn-icon) {
+            color: var(--button-primary);
+        }
+
+        .mdui-btn:not(.mdui-btn-raised):not(.mdui-btn-icon):hover {
+            background-color: var(--button-hover);
+        }
+
+        .mdui-dialog-actions .mdui-btn {
+            color: var(--text-primary);
+        }
+
+        .mdui-dialog-title {
+            color: var(--text-primary);
+        }
+
+        .mdui-dialog-content {
+            color: var(--text-secondary);
+        }
+
+        .mdui-textfield-input {
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .mdui-select {
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        a {
+            color: var(--link-color);
+        }
+
+        .mdui-checkbox-icon {
+            border-color: var(--border-color);
+        }
+
+        /* 深色模式适配 */
+        .dark-mode {
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --button-primary: var(--button-primary-dark);
+            --button-hover: var(--button-hover-dark);
+            --link-color: var(--link-color-dark);
+            --border-color: var(--border-color-dark);
+            --background-primary: var(--background-primary-dark);
+            --background-secondary: var(--background-secondary-dark);
+            --highlight-color: var(--highlight-color-dark);
+        }
+
+        /* 修改开关样式 */
+        .mdui-switch input[type=checkbox]:checked+.mdui-switch-icon {
+            background-color: var(--header-color) !important;
+            border-color: var(--header-color) !important;
+        }
+
+        .mdui-switch input[type=checkbox]:checked+.mdui-switch-icon:before {
+            background-color: #fff !important; /* 开关圆点保持白色 */
+        }
+
+        /* 修改复选框样式 - 使用强调色 */
+        .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            border-color: var(--accent-color) !important;
+            background-color: var(--accent-color) !important;
+        }
+
+        /* 复选框悬停效果 */
+        .mdui-checkbox:hover input[type=checkbox]:checked+.mdui-checkbox-icon {
+            opacity: 0.87;
+            background-color: var(--accent-color) !important;
+        }
+
+        /* 未选中状态下的复选框边框颜色 */
+        .mdui-checkbox-icon {
+            border-color: var(--border-color) !important;
+            background-color: transparent !important;
+        }
+
+        /* 禁用状态的复选框 */
+        .mdui-checkbox[disabled] input[type=checkbox]:checked+.mdui-checkbox-icon {
+            background-color: rgba(var(--accent-color-rgb), 0.5) !important;
+            border-color: rgba(var(--accent-color-rgb), 0.5) !important;
+        }
+
+        /* 深色模式下的复选框样式调整 */
+        .dark-mode .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            opacity: 0.9;
+        }
+
+        /* 修改模型选择窗口的勾选框样式 */
+        #model-selection-dialog .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon,
+        .mdui-dialog .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            border-color: var(--accent-color) !important;
+            background-color: var(--accent-color) !important;
+        }
+
+        /* 悬停效果 */
+        #model-selection-dialog .mdui-checkbox:hover input[type=checkbox]:checked+.mdui-checkbox-icon,
+        .mdui-dialog .mdui-checkbox:hover input[type=checkbox]:checked+.mdui-checkbox-icon {
+            opacity: 0.87;
+            background-color: var(--accent-color) !important;
+        }
+
+        /* 确保所有对话框中的勾选框都使用正确的颜色 */
+        .mdui-theme-accent-pink .mdui-checkbox input[type=checkbox]:checked+.mdui-checkbox-icon {
+            border-color: var(--accent-color) !important;
+            background-color: var(--accent-color) !important;
+        }
+
+        /* 为设置对话框的标签页内容添加底部间距 */
+        .mdui-dialog .mdui-tab-panel {
+            padding-bottom: 80px !important; /* 添加足够的底部间距以容纳按钮 */
+        }
+
+        /* 确保设置面板可以滚动 */
+        .mdui-dialog-content {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* 设置对话框的整体样式 */
+        #settings-dialog {
+            max-height: 90vh !important; /* 限制最大高度为视口高度的90% */
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* 设置对话框的内容区域样式 */
+        #settings-dialog .mdui-dialog-content {
+            max-height: calc(90vh - 140px) !important; /* 减去标题和按钮区域的高度 */
+            overflow-y: auto !important;
+            flex: 1 !important;
+        }
+
+        /* 为每个标签页面板添加足够的底部间距 */
+        #settings-dialog .mdui-tab-panel {
+            padding-bottom: 120px !important; /* 增加底部间距，确保内容不被按钮遮挡 */
+        }
+
+        /* 确保底部按钮固定在底部 */
+        #settings-dialog .mdui-dialog-actions {
+            position: sticky !important;
+            bottom: 0 !important;
+            background: var(--app-background-color) !important;
+            border-top: 1px solid var(--border-color) !important;
+            padding: 16px !important;
+            z-index: 1 !important;
+        }
+
+        /* 深色模式适配 */
+        .dark-mode #settings-dialog .mdui-dialog-actions {
+            background: var(--app-background-color) !important;
+            border-top-color: rgba(255, 255, 255, 0.1) !important;
+        }
